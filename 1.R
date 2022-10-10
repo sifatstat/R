@@ -1,0 +1,99 @@
+######### part 1 ######### 
+
+plot_f1 = function(sheet) {
+    library(xlsx)
+    data1 = read.xlsx('Mock_data.xlsx', sheetName = sheet) 
+    data2 = data.frame(data1$time_diff, 
+                       data1$glc_m, 
+                       data1$X2h_glc_to_water, 
+                       data1$X13c_glycogen)
+    data2 = data2[order(data2$data1.time_diff), ]
+    
+    # data2 = as.data.frame(lapply(data2, scale))
+    data2[-1] = as.data.frame(lapply(data2[-1], scale))
+    
+    data3 = na.omit(data2[c(1, 2)])
+    plot(data3, type = 'b', col = 'blue', 
+         # xlim = range(data2[1], na.rm = T), ylim = range(data2[-1], na.rm = T), 
+         # xlim = c(-2.8, 2.8), ylim = c(-2.8, 2.8),
+         xlim = range(data2$data1.time_diff, na.rm = T), ylim = c(-2.8, 2.8),
+         xlab = 'time_diff', ylab = '', 
+         lwd = 2, lty = 2, 
+         main = sprintf('time_diff vs Different Characteristics of Patient %s', 
+                        sheet))
+    
+    data3 = na.omit(data2[c(1, 3)])
+    lines(data3, type = 'b', col = 'green', lwd = 2, lty = 3)
+    
+    data3 = na.omit(data2[c(1, 4)])
+    lines(data3, type = 'b', col = 'red', lwd = 2, lty = 4)
+    legend('topleft', c('glc_m', '2h_glc_to_water', '3c_glycogen'), 
+           col = c('blue', 'green', 'red'),
+           text.col = c('blue', 'green', 'red'), lty = 2:4,
+           merge = T, lwd = 2, cex = 1, bty = 'n')
+}
+
+plot_f1('P07')
+plot_f1('D06')
+plot_f1('D11')
+plot_f1('D15')
+plot_f1('D13')
+plot_f1('D14')
+plot_f1('D17')
+plot_f1('D10')
+plot_f1('D18')
+
+
+
+
+######### part 2 ######### 
+
+plot_f2 = function(study_group) {
+    temp1 = c()
+    temp2 = c()
+    for(i in 1:length(study_group)) {
+      library(xlsx)
+      data1 = read.xlsx('Mock_data.xlsx', sheetName = study_group[i]) 
+      temp1 = c(data1$time_diff, temp1)
+      temp2 = c(data1$glc_m, temp2)
+    }
+  
+    for(i in 1:length(study_group)) {
+        library(xlsx)
+        data1 = read.xlsx('Mock_data.xlsx', sheetName = study_group[i]) 
+        data2 = data.frame(data1$time_diff, data1$glc_m)
+        # data2[-1] = as.data.frame(lapply(data2[-1], scale))
+        data2 = data2[order(data1$time_diff), ]
+        data3 = na.omit(data2)
+        
+        if(i == 1) {
+            plot(data3, type = 'b', col = i + 1, 
+                 # xlim = c(-2.8, 2.8), 
+                 xlim = range(temp1, na.rm = T), 
+                 # ylim = c(-2.8, 2.8), 
+                 ylim = range(temp2, na.rm = T),
+                 xlab = 'time_diff', 
+                 ylab = 'glc_m', lwd = 2, lty = i + 1,
+                 main = 'time_diff vs glc_m for Different Patients')
+        } else {
+            lines(data3, type = 'b', col = i + 1, lwd = 2, lty = i + 1)
+        }
+    }
+    
+    legend('topleft', study_group, 
+        col = 2:(length(study_group) + 1),
+        text.col = 2:(length(study_group) + 1), 
+        lty = 2:(length(study_group) + 1),
+        merge = T, lwd = 2, cex = 1, bty = 'n')
+}
+
+data1 = read.xlsx('Mock_data.xlsx', sheetName = 'Baseline') 
+data1 = data1[c(1, 3)]
+
+data1$study_id = as.vector(t(as.data.frame(strsplit(data1$study_id, '_')))[, 2])
+# for(i in 1:length(data1$study_id)) data1$study_id[i] = strsplit(data1$study_id, '_')[[i]][2]
+# data1$study_id = unlist(strsplit(data1$study_id, '_'))[seq(2, 2 * length(data1$study_id), 2)]
+
+plot_f2(data1$study_id[data1$study_group == 0])
+plot_f2(data1$study_id[data1$study_group == 1])
+plot_f2(data1$study_id[data1$study_group == 2])
